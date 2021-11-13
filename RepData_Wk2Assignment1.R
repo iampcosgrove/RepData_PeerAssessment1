@@ -69,6 +69,10 @@ sum(is.na(activity$steps))
 # Calculate average steps per interval period across all days
 AvgStepsInterval <- activity_clean %>% group_by(interval) %>% summarise(steps = mean(steps))
 
+#  What is the maximum average 5min interval steps?
+
+max(AvgStepsInterval$steps)
+
 # Let's take a look and plot Average steps per interval over the course of the day
 ggplot(AvgStepsInterval)+ 
    geom_line(aes(interval, steps), color = "Blue", size = 1)+

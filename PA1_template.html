@@ -217,6 +217,9 @@ StepsMedian</code></pre>
 <h2>What is the average daily activity pattern?</h2>
 <p>Calculate average steps per interval period across all days</p>
 <pre class="r"><code>AvgStepsInterval &lt;- activity_clean %&gt;% group_by(interval) %&gt;% summarise(steps = mean(steps))</code></pre>
+<p>What is the maximum average 5min interval steps?</p>
+<pre class="r"><code>max(AvgStepsInterval$steps)</code></pre>
+<pre><code>## [1] 206.1698</code></pre>
 <p>Let’s take a look and plot average steps per interval over the course of the day</p>
 <pre class="r"><code>ggplot(AvgStepsInterval)+ 
    geom_line(aes(interval, steps), color= &quot;blue&quot;, size = 1)+
