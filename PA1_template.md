@@ -9,7 +9,8 @@ output:
 ## Loading and preprocessing the data
 
 First we will set the working environment and load required packages for processing.
-```{r, set environment, echo= TRUE, message= FALSE}
+
+```r
 setwd("~/GitHub/RepData_PeerAssessment1")
 
 library(data.table)
@@ -19,7 +20,8 @@ library(knitr)
 ```
 
 Next, we download and read data into the environment.
-```{r, download data, echo= TRUE, results= 'hide'}
+
+```r
 if(!file.exists("data")){
       dir.create("data")
 }
@@ -33,11 +35,11 @@ if(!file.exists("~/GitHub/RepData_PeerAssessment1/")) {
       file.remove("~/GitHub/RepData_PeerAssessment1/data/dataZIP.zip")}
 
 activity <- fread("~/GitHub/RepData_PeerAssessment1/data/activity.csv")
-
 ```
 
 Remove NA's as they will impact statistics by including only complete cases
-```{r, clean data, echo= TRUE}
+
+```r
 activity_clean <- activity[complete.cases(activity),]
 ```
 
@@ -47,30 +49,44 @@ activity_clean <- activity[complete.cases(activity),]
 
 First, we need to calculate the total number of steps taken per day
 
-```{r, Calculate Steps, echo= TRUE}
+
+```r
 TotalStepsDay <- activity_clean %>% group_by(date) %>% summarise(TotalSteps = sum(steps))
 ```
 
 Make a histogram of the total number of steps taken each day
 
-```{r, Total Steps per Day, echo= TRUE, warning = FALSE}
+
+```r
 ggplot(TotalStepsDay, aes(x= date, y= TotalSteps))+
       geom_histogram(stat= 'identity', binwidth = 1, col= "black", fill= "blue2")+
       labs(x= "Date", y= "Total Steps per Day", title= "Monitored Steps per Day")
 ```
+
+![](PA1_template_files/figure-html/Total Steps per Day-1.png)<!-- -->
     
 Calculate and report the mean and median of the total number of steps taken per day.
 
 The mean steps/day is
-```{r, echo= TRUE}
+
+```r
 StepsMean <- mean(TotalStepsDay$TotalSteps)
 StepsMean
 ```
 
+```
+## [1] 10766.19
+```
+
 while the median steps/day is 
-```{r, echo= TRUE}
+
+```r
 StepsMedian <- median(TotalStepsDay$TotalSteps)
 StepsMedian
+```
+
+```
+## [1] 10765
 ```
 
 ## What is the average daily activity pattern?
@@ -78,24 +94,33 @@ StepsMedian
 
 Calculate average steps per interval period across all days
 
-```{r, echo= TRUE}
+
+```r
 AvgStepsInterval <- activity_clean %>% group_by(interval) %>% summarise(steps = mean(steps))
 ```
 
 Let's take a look and plot average steps per interval over the course of the day
-```{r, Average Steps per Day, echo= TRUE}
+
+```r
 ggplot(AvgStepsInterval)+ 
    geom_line(aes(interval, steps), color= "blue", size = 1)+
    labs(x= "Time of Day", y= "Average Steps/5min", title= "Average Steps Over A Day")
 ```
+
+![](PA1_template_files/figure-html/Average Steps per Day-1.png)<!-- -->
 
 
 ## Imputing missing values
 
 Calculate and report the total number of missing values in the dataset (i.e. the total number of rows with NAs)
 
-```{r, echo= TRUE}
+
+```r
 sum(is.na(activity$steps))
+```
+
+```
+## [1] 2304
 ```
 
 Create a new dataset that is equal to the original dataset but with the missing data filled in.
@@ -103,7 +128,8 @@ Create a new dataset that is equal to the original dataset but with the missing 
 First, we'll replace NA's of missing steps with mean steps of that specific interval.  This is due to missing
 data for 8 days.  This will be the same as replacing the missing days with the mean total sum of those days.
 
-```{r, echo= TRUE}
+
+```r
 Activity_Imput <- activity %>% inner_join(AvgStepsInterval, by= "interval") %>%
    mutate(steps = coalesce(steps.x, steps.y)) %>%
    select(date, interval, steps)
@@ -111,7 +137,8 @@ Activity_Imput <- activity %>% inner_join(AvgStepsInterval, by= "interval") %>%
 
 After replacing missing intervals we need to calculate the total steps per day for each day.
 
-```{r, echo= TRUE}
+
+```r
 ImputTotalStepsDay <- Activity_Imput %>% group_by(date) %>% summarise(TotalSteps = sum(steps))
 ImputStepsMean <- mean(ImputTotalStepsDay$TotalSteps)
 ImputStepsMedian <- median(ImputTotalStepsDay$TotalSteps)
@@ -122,20 +149,33 @@ median total number of steps taken per day. Do these values differ from the esti
 part of the assignment? What is the impact of imputing missing data on the estimates of the total 
 daily number of steps?
 
-```{r, Imputted Steps per Day, echo= TRUE, warning = FALSE}
+
+```r
 ggplot(ImputTotalStepsDay, aes(x= date, y= TotalSteps))+
    geom_histogram(stat= 'identity', col= "black", fill= "blue2")+
    labs(x= "Date", y= "Total Steps per Day", title= "Imputted Monitored Steps per Day")
 ```
 
+![](PA1_template_files/figure-html/Imputted Steps per Day-1.png)<!-- -->
+
 The imputted mean steps/day is
-```{r, echo= TRUE}
+
+```r
 ImputStepsMean
 ```
 
+```
+## [1] 10766.19
+```
+
 while the imputted median steps/day is 
-```{r, echo= TRUE}
+
+```r
 ImputStepsMedian
+```
+
+```
+## [1] 10766.19
 ```
 
 Based on these results the mean and median did not change, compared to initial calculations in the 
@@ -150,7 +190,8 @@ However, in general imputting the missing data can potentially falsely affirm ob
 First, we will use the cleaned activity dataset (activity_clean). To add day of the week and convert
 to weekday (Monday - Friday) or weekend (Saturday - Sunday).
 
-```{r, echo= TRUE}
+
+```r
 activity_clean$Day <- weekdays(as.Date(activity_clean$date))
 activity_clean$Day <- as.factor(activity_clean$Day)
 levels(activity_clean$Day) <-list(
@@ -161,16 +202,20 @@ levels(activity_clean$Day) <-list(
 
 Next, we need to calculate the average steps per interval for each weekdays or weekends.
 
-```{r, echo= TRUE, message = FALSE, warning = FALSE}
+
+```r
 AvgStepsWkInterval <- activity_clean %>% group_by(interval, Day) %>% summarise(steps = mean(steps))
 ```
 
 Next, we need to create plots for each weekday and weekend.
 
-```{r, Weekday & Weekend, echo= TRUE}
+
+```r
 ggplot(AvgStepsWkInterval)+ 
    geom_line(aes(interval, steps, color = Day), size = 1)+
    labs(x= "Day Interval (5min)", y= "Average Steps Taken", title= "Average Steps: Weekday vs. Weekend") +
    facet_grid(rows = vars(Day)) +
    theme(legend.position="none")
 ```
+
+![](PA1_template_files/figure-html/Weekday & Weekend-1.png)<!-- -->
